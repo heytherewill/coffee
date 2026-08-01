@@ -6,7 +6,9 @@
         "grounds": 11,
         "water": 200,
         "timeInSeconds": 200,
-        "instructions": "TODO: Add actual instructions"
+        "instructions": [
+            "TODO: Add actual instructions"
+        ]
     },
     {
         "method": "mizudashi",
@@ -19,7 +21,6 @@
             "Insert the ground beans in the Mizudashi filter.",
             "Pour {{water}} ml of room temperature water.",
             "Let it rest for {{time}}."
-    
         ]
     },
       {

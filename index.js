@@ -11,7 +11,8 @@
         const recipeList = recipesContainer.querySelector("#recipeList");
         for (const recipe of recipesInDisplay) {
 
-            const formattedTime = formatTimeFromSeconds(recipe.timeInSeconds);
+            const formattedTime = formatTimeFromSeconds(recipe.timeInSeconds, 'short');
+            const instructions = renderInstructions(recipe);
 
             const recipeElement = document.createElement('li');
             recipeElement.innerHTML = `
@@ -27,9 +28,9 @@
                     </div>
                 </div>
                 <div class="instructions">
-                    <i class="fa-solid fa-gear"></i> ${recipe.grinderSetting} clicks.
-                     </br>
-                    ${recipe.instructions}
+                    <ol>
+                        ${instructions}
+                    </ol>
                 </div>`
             
             const showInstructionsLink = document.createElement('a');
@@ -46,18 +47,14 @@
             recipeList.appendChild(recipeElement);
         }
 
-        function formatTimeFromSeconds(seconds) {
+        function formatTimeFromSeconds(seconds, style) {
             const secondsInOneHour = 3600;
             const secondsInOneMinute = 60;
 
             const hours = Math.floor(seconds / secondsInOneHour);
-            console.log(hours);
             const remainingSecondsAfterHours = seconds - (hours * secondsInOneHour);
-            console.log(remainingSecondsAfterHours);
             const minutes = Math.floor(remainingSecondsAfterHours / secondsInOneMinute);
-            console.log(minutes);
             const remainingSeconds = remainingSecondsAfterHours - (minutes * secondsInOneMinute);
-            console.log(remainingSeconds);
             
             const duration = {
                 hours: hours,
@@ -65,8 +62,30 @@
                 seconds: remainingSeconds
             };
 
-            const durationFormatter = new Intl.DurationFormat("en", { style: "short" });
+            const durationFormatter = new Intl.DurationFormat("en", { style: style });
             return durationFormatter.format(duration);
+        }
+
+        function renderInstructions(recipe) {
+            const instructionList = document.createElement('ol');
+
+            const grindSettingInstruction = document.createElement('li');
+            grindSettingInstruction.innerHTML = `Grind the beans with the grinder set at ${recipe.grinderSetting} clicks.`;
+            instructionList.appendChild(grindSettingInstruction);
+
+            for (const instruction of recipe.instructions) {
+                const instructionElement = document.createElement('li');
+                instructionElement.innerHTML = replaceInstructionItems(instruction);
+                instructionList.appendChild(instructionElement);
+            }
+
+            return instructionList.getHTML();
+
+            function replaceInstructionItems(instruction) {
+                return instruction
+                    .replace("{{time}}", formatTimeFromSeconds(recipe.timeInSeconds, 'long'))
+                    .replace("{{water}}", recipe.water);
+            }
         }
     }
 })();
