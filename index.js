@@ -20,13 +20,24 @@
                         <h5>
                             <i class="fa-solid fa-weight-scale"></i>${recipe.grounds}gr
                             <i class="fa-solid fa-droplet"></i>${recipe.water}ml
-                            <i class="fa-solid fa-clock"></i> ${recipe.timeInSeconds} seconds</h5>
-                        <h4><a href="#">Show instructions</a></h4>
+                            <i class="fa-solid fa-clock"></i>${recipe.timeInSeconds} seconds</h5>
+                        <h4></h4>
                     </div>
                 </div>
                 <div class="instructions">
                     ${recipe.instructions}
                 </div>`
+            
+            const showInstructionsLink = document.createElement('a');
+            showInstructionsLink.href = '#';
+            showInstructionsLink.innerHTML = 'Show instructions';
+            showInstructionsLink.onclick = function showInstructionsToggle() {
+                const instructions = recipeElement.querySelector('.instructions');
+                instructions.classList.toggle('visible');
+                showInstructionsLink.innerHTML = instructions.classList.contains('visible') ? 'Hide instructions' : 'Show instructions';
+            };
+            const instructionsContainer = recipeElement.querySelector('h4');
+            instructionsContainer.appendChild(showInstructionsLink);
 
             recipeList.appendChild(recipeElement);
         }

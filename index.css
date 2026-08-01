@@ -91,6 +91,11 @@ section {
 
 .instructions {
     margin-top: 0.5em;
+    display: none;
+}
+
+.instructions.visible {
+    display: block;
 }
 
 .recipeHeader {
