@@ -9,17 +9,19 @@
         // Clean everything inside the container.
         recipesContainer.innerHTML = '<ul id="recipeList"></ul>';
         const recipeList = recipesContainer.querySelector("#recipeList");
-        for(const recipe of recipesInDisplay) {
+        for (const recipe of recipesInDisplay) {
             // TODO: Create actual render of each recipe.
             const recipeElement = document.createElement('li');
-            recipeElement.innerHTML =
-`
+            recipeElement.innerHTML = `
                 <div class="recipeHeader">
-                    <img src="https://placehold.co/60x60"/>
+                    <img src="https://placehold.co/70x70"/>
                     <div>
                     <h3>${recipe.name}</h3>
-                        <h5>${recipe.grounds}gr . ${recipe.water}ml . ${recipe.timeInSeconds} seconds</h5>
-                        <h4>Show instructions</h4>
+                        <h5>
+                            <i class="fa-solid fa-weight-scale"></i>${recipe.grounds}gr
+                            <i class="fa-solid fa-droplet"></i>${recipe.water}ml
+                            <i class="fa-solid fa-clock"></i> ${recipe.timeInSeconds} seconds</h5>
+                        <h4><a href="#">Show instructions</a></h4>
                     </div>
                 </div>
                 <div class="instructions">
