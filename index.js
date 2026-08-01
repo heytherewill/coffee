@@ -27,6 +27,8 @@
                     </div>
                 </div>
                 <div class="instructions">
+                    <i class="fa-solid fa-gear"></i> ${recipe.grinderSetting} clicks.
+                     </br>
                     ${recipe.instructions}
                 </div>`
             
