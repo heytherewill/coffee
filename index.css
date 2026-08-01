@@ -1,3 +1,55 @@
+:root {
+  --dark-color: #3B2F2F; /* global scope */
+  --light-color: #D2B48C; /* global scope *//* global scope */
+}
+
+* {
+    margin: 0px;
+}
+
 body {
-    background-color: aquamarine;
+    color: var(--dark-color);
+    background-color: var(--light-color);
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1em;
+}
+
+p {
+    text-align: end;
+}
+
+h1 {
+    text-align: center;
+    font-family: "EB Garamond", serif;
+}
+
+ul {
+    list-style-type: none;
+    padding-inline-start: 2em;
+    padding-inline-end: 1em;
+}
+
+li {
+    margin-bottom: 1.5em;
+}
+
+img {
+    margin-right: 0.5em;
+}
+
+section {
+    margin-top: 1em
+}
+
+.instructions {
+    margin-top: 0.5em;
+}
+
+.recipeHeader {
+    display: flex;
 }

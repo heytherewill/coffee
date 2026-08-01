@@ -2,19 +2,19 @@
     {
         "method": "aeropress",
         "name": "Daily driver",
-        "grinder_setting": 65,
+        "grinderSetting": 65,
         "grounds": 11,
         "water": 200,
-        "time_in_seconds": 200,
+        "timeInSeconds": 200,
         "instructions": "TODO: Add actual instructions"
     },
     {
         "method": "mizudashi",
         "name": "Medium roast cold brew",
-        "grinder_setting": 125,
+        "grinderSetting": 125,
         "grounds": 60,
         "water": 800,
-        "time_in_seconds": 86400,
+        "timeInSeconds": 86400,
         "instructions": "TODO: Add actual instructions"
     }
 ]
