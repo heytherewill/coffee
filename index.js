@@ -16,7 +16,7 @@
             const recipeElement = document.createElement('li');
             recipeElement.innerHTML = `
                 <div class="recipeHeader">
-                    <img src="https://placehold.co/70x70"/>
+                    <img src="/img/${recipe.method}.png"/>
                     <div>
                     <h3>${recipe.name}</h3>
                         <h5>
