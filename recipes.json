@@ -10,11 +10,32 @@
     },
     {
         "method": "mizudashi",
-        "name": "Medium roast cold brew",
+        "name": "Cold Brew",
         "grinderSetting": 125,
         "grounds": 60,
         "water": 800,
         "timeInSeconds": 86400,
-        "instructions": "TODO: Add actual instructions"
+        "instructions": [
+            "Insert the ground beans in the Mizudashi filter.",
+            "Pour {{water}} ml of room temperature water.",
+            "Let it rest for {{time}}."
+    
+        ]
+    },
+      {
+        "method": "v60",
+        "name": "Daniela's Mugen",
+        "grinderSetting": 100,
+        "grounds" : 17,
+        "water" : 290,
+        "timeInSeconds" : 100,
+        "instructions" : [
+            "Rinse the filter with hot water.",
+            "Throw away the water from the pitcher.",
+            "Insert the ground beans in the filter.",
+            "Start a timer.",
+            "Pour {{water}} ml for 40 seconds and wait the remaing time.",
+            "Wait for 2 to 3 minutes before serving."
+        ]
     }
 ]
