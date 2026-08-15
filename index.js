@@ -10,6 +10,7 @@
   const themeToggle = document.querySelector("#theme-toggle");
   const methodLabels = new Map();
   const recipeElements = new Map();
+  const recipeControls = new Map();
   let allRecipes = [];
   let recipeList;
   let emptyState;
@@ -28,8 +29,9 @@
     allRecipes = await response.json();
     populateMethods(allRecipes);
     createRecipeList(allRecipes);
-    readFiltersFromUrl();
-    applyFilters();
+    const sharedRecipeId = readFiltersFromUrl();
+    applyFilters(false);
+    openRecipeFromUrl(sharedRecipeId);
   } catch (error) {
     recipesContainer.textContent = "The menu is taking a coffee break. Please try again shortly.";
   }
@@ -39,8 +41,9 @@
   filters.addEventListener("change", applyFilters);
   clearFiltersButton.addEventListener("click", clearFilters);
   window.addEventListener("popstate", () => {
-    readFiltersFromUrl();
+    const sharedRecipeId = readFiltersFromUrl();
     applyFilters(false);
+    openRecipeFromUrl(sharedRecipeId);
   });
 
   function populateMethods(recipes) {
@@ -59,6 +62,7 @@
     methodFilter.value = [...methodFilter.options].some(option => option.value === params.get("method")) ? params.get("method") : "";
     timeFilter.value = ["quick", "medium", "ahead"].includes(params.get("time")) ? params.get("time") : "";
     temperatureFilter.value = ["hot", "cold"].includes(params.get("temperature")) ? params.get("temperature") : "";
+    return params.get("recipe");
   }
 
   function applyFilters(updateUrl = true) {
@@ -83,12 +87,13 @@
     return true;
   }
 
-  function writeFiltersToUrl({ query, method, time, temperature }) {
+  function writeFiltersToUrl({ query, method, time, temperature }, recipe = openRecipeId()) {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
     if (method) params.set("method", method);
     if (time) params.set("time", time);
     if (temperature) params.set("temperature", temperature);
+    if (recipe) params.set("recipe", recipe);
     const queryString = params.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${queryString ? `?${queryString}` : ""}`);
   }
@@ -122,38 +127,38 @@
           <button class="recipe__toggle" id="${toggleId}" type="button" aria-expanded="false" aria-controls="${instructionsId}">View recipe</button>
         </div>
         <div class="instructions" id="${instructionsId}" role="region" aria-labelledby="${toggleId}">
-          <section class="scale" aria-labelledby="${scaleId}-heading">
-            <button class="scale__toggle" id="${scaleId}-toggle" type="button" aria-expanded="false" aria-controls="${scaleId}">Scale this brew</button>
-            <div class="scale__body" id="${scaleId}" hidden>
-              <div class="scale__heading"><h4 id="${scaleId}-heading">Make it your amount</h4><button class="scale__reset" type="button" hidden>Reset</button></div>
-              <label class="scale__label" for="${scaleId}-coffee">Coffee</label>
-              <div class="scale__control">
-                <button class="scale__step" type="button" data-direction="-1" aria-label="Decrease coffee">−</button>
-                <input id="${scaleId}-coffee" type="number" inputmode="decimal" min="5" step="0.1" value="${baseCoffee}" aria-describedby="${scaleId}-help ${scaleId}-error">
-                <span>g</span>
-                <button class="scale__step" type="button" data-direction="1" aria-label="Increase coffee">+</button>
+          <div class="recipe__actions">
+            <section class="scale" aria-labelledby="${scaleId}-heading">
+              <button class="scale__toggle" id="${scaleId}-toggle" type="button" aria-expanded="false" aria-controls="${scaleId}">Scale this brew</button>
+              <div class="scale__body" id="${scaleId}" hidden>
+                <div class="scale__heading"><h4 id="${scaleId}-heading">Make it your amount</h4><button class="scale__reset" type="button" hidden>Reset</button></div>
+                <label class="scale__label" for="${scaleId}-coffee">Coffee</label>
+                <div class="scale__control">
+                  <button class="scale__step" type="button" data-direction="-1" aria-label="Decrease coffee">−</button>
+                  <input id="${scaleId}-coffee" type="number" inputmode="decimal" min="5" step="0.1" value="${baseCoffee}" aria-describedby="${scaleId}-help ${scaleId}-error">
+                  <span>g</span>
+                  <button class="scale__step" type="button" data-direction="1" aria-label="Increase coffee">+</button>
+                </div>
+                <p class="scale__help" id="${scaleId}-help">Original: ${formatAmount(baseCoffee, "coffee")} · <span class="scale__ratio"></span></p>
+                <p class="scale__error" id="${scaleId}-error" role="alert"></p>
+                <div class="scale__presets" aria-label="Coffee amount presets"><button type="button" data-factor="0.5">½</button><button type="button" data-factor="1">Original</button><button type="button" data-factor="2">2×</button></div>
+                <dl class="scale__results"></dl>
               </div>
-              <p class="scale__help" id="${scaleId}-help">Original: ${formatAmount(baseCoffee, "coffee")} · <span class="scale__ratio"></span></p>
-              <p class="scale__error" id="${scaleId}-error" role="alert"></p>
-              <div class="scale__presets" aria-label="Coffee amount presets"><button type="button" data-factor="0.5">½</button><button type="button" data-factor="1">Original</button><button type="button" data-factor="2">2×</button></div>
-              <dl class="scale__results"></dl>
-            </div>
-          </section>
+            </section>
+            <button class="recipe__share" type="button">Share recipe</button>
+            <p class="recipe__share-status" role="status" aria-live="polite"></p>
+          </div>
           <h4>Method</h4>
           <ol class="recipe__instruction-list">${instructionItems(recipe, getIngredients(recipe))}</ol>
         </div>`;
 
       const button = item.querySelector("button");
       const instructions = item.querySelector(".instructions");
-      button.addEventListener("click", () => {
-        const isOpen = !instructions.classList.contains("visible");
-        setExpanded(instructions, isOpen);
-        button.setAttribute("aria-expanded", String(isOpen));
-        button.textContent = isOpen ? "Hide recipe" : "View recipe";
-        if (isOpen) requestWakeLock();
-      });
+      button.addEventListener("click", () => setRecipeExpanded(recipe, !instructions.classList.contains("visible")));
+      item.querySelector(".recipe__share").addEventListener("click", event => shareRecipe(recipe, event.currentTarget, item.querySelector(".recipe__share-status")));
       attachScaling(item, recipe, baseCoffee);
       recipeElements.set(recipe, item);
+      recipeControls.set(recipe, { button, instructions });
       recipeList.appendChild(item);
     });
     emptyState = document.createElement("div");
@@ -175,6 +180,78 @@
       setAnimatedVisibility(recipeList, false);
       setAnimatedVisibility(emptyState, true);
       animateUpdate(emptyState);
+    }
+  }
+
+  function recipeId(recipe) {
+    return `${recipe.method}-${normalize(recipe.name).replaceAll(" ", "-")}`;
+  }
+
+  function openRecipeId() {
+    for (const [recipe, { instructions }] of recipeControls) {
+      if (instructions.classList.contains("visible")) return recipeId(recipe);
+    }
+    return "";
+  }
+
+  function setRecipeExpanded(recipe, expanded, updateUrl = true) {
+    const control = recipeControls.get(recipe);
+    if (!control) return;
+
+    if (expanded) {
+      for (const [otherRecipe, otherControl] of recipeControls) {
+        if (otherRecipe === recipe || !otherControl.instructions.classList.contains("visible")) continue;
+        setExpanded(otherControl.instructions, false);
+        otherControl.button.setAttribute("aria-expanded", "false");
+        otherControl.button.textContent = "View recipe";
+      }
+    }
+
+    setExpanded(control.instructions, expanded);
+    control.button.setAttribute("aria-expanded", String(expanded));
+    control.button.textContent = expanded ? "Hide recipe" : "View recipe";
+    if (expanded) requestWakeLock();
+    if (updateUrl) writeFiltersToUrl(currentFilterState(), expanded ? recipeId(recipe) : "");
+  }
+
+  function openRecipeFromUrl(sharedRecipeId) {
+    const recipe = allRecipes.find(candidate => recipeId(candidate) === sharedRecipeId);
+    if (recipe) {
+      setRecipeExpanded(recipe, true, false);
+      requestAnimationFrame(() => recipeElements.get(recipe).scrollIntoView({ block: "start" }));
+      return;
+    }
+    for (const [candidate, { instructions }] of recipeControls) {
+      if (instructions.classList.contains("visible")) setRecipeExpanded(candidate, false, false);
+    }
+  }
+
+  function currentFilterState() {
+    return { query: searchInput.value.trim(), method: methodFilter.value, time: timeFilter.value, temperature: temperatureFilter.value };
+  }
+
+  async function shareRecipe(recipe, button, status) {
+    writeFiltersToUrl(currentFilterState(), recipeId(recipe));
+    const url = window.location.href;
+    const shareData = { title: `${recipe.name} coffee recipe`, text: `Try ${recipe.name} from Will & Dani's coffee menu.`, url };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        status.textContent = "Recipe shared.";
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      status.textContent = "Link copied.";
+      button.textContent = "Link copied";
+      window.setTimeout(() => { button.textContent = "Share recipe"; }, 1800);
+    } catch (error) {
+      window.prompt("Copy this recipe link:", url);
     }
   }
 
