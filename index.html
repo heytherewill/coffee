@@ -25,7 +25,13 @@
             <p class="eyebrow">Choose a brew</p>
             <h2 id="menu-title">Today’s coffee menu</h2>
           </div>
-          <p id="recipe-count" class="recipe-count" aria-live="polite"></p>
+          <div class="menu__actions">
+            <p id="recipe-count" class="recipe-count" aria-live="polite"></p>
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
+              <span aria-hidden="true">◐</span>
+              <span>Dark mode</span>
+            </button>
+          </div>
         </div>
         <form id="filters" class="filters" role="search">
           <div class="filter-search">

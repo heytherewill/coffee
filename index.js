@@ -7,12 +7,20 @@
   const timeFilter = document.querySelector("#time-filter");
   const temperatureFilter = document.querySelector("#temperature-filter");
   const clearFiltersButton = document.querySelector("#clear-filters");
+  const themeToggle = document.querySelector("#theme-toggle");
   const methodLabels = { aeropress: "AeroPress", v60: "V60", mizudashi: "Mizudashi" };
   const recipeElements = new Map();
   let allRecipes = [];
   let recipeList;
   let emptyState;
   let wakeLock = null;
+
+  applyTheme(getSavedTheme() || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  themeToggle.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    applyTheme(nextTheme);
+    try { window.localStorage.setItem("coffee-theme", nextTheme); } catch (error) { /* Theme still works for this visit. */ }
+  });
 
   try {
     const response = await fetch("recipes.json");
@@ -330,6 +338,22 @@
       void element.offsetWidth;
       element.classList.add("is-updating");
     });
+  }
+
+  function getSavedTheme() {
+    try {
+      const theme = window.localStorage.getItem("coffee-theme");
+      return theme === "dark" || theme === "light" ? theme : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function applyTheme(theme) {
+    const isDark = theme === "dark";
+    document.documentElement.dataset.theme = theme;
+    themeToggle.setAttribute("aria-pressed", String(isDark));
+    themeToggle.lastElementChild.textContent = isDark ? "Light mode" : "Dark mode";
   }
 
   function motionIsReduced() {
