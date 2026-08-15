@@ -8,7 +8,7 @@
   const temperatureFilter = document.querySelector("#temperature-filter");
   const clearFiltersButton = document.querySelector("#clear-filters");
   const themeToggle = document.querySelector("#theme-toggle");
-  const methodLabels = { aeropress: "AeroPress", v60: "V60", mizudashi: "Mizudashi" };
+  const methodLabels = new Map();
   const recipeElements = new Map();
   let allRecipes = [];
   let recipeList;
@@ -45,6 +45,7 @@
 
   function populateMethods(recipes) {
     [...new Set(recipes.map(recipe => recipe.method))].forEach(method => {
+      methodLabels.set(method, inferMethodLabel(method, recipes));
       const option = document.createElement("option");
       option.value = method;
       option.textContent = methodLabel(method);
@@ -221,7 +222,20 @@
     return previous[second.length];
   }
 
-  function methodLabel(method) { return methodLabels[method] || method.replace(/\b\w/g, letter => letter.toUpperCase()); }
+  function methodLabel(method) { return methodLabels.get(method) || formatMethod(method); }
+
+  function inferMethodLabel(method, recipes) {
+    const escapedMethod = method.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const mention = recipes
+      .flatMap(recipe => [recipe.name, ...(recipe.instructions || [])])
+      .join(" ")
+      .match(new RegExp(`\\b${escapedMethod}\\b`, "i"));
+    return mention ? mention[0] : formatMethod(method);
+  }
+
+  function formatMethod(method) {
+    return method.replace(/[-_]+/g, " ").replace(/\b\w/g, letter => letter.toUpperCase());
+  }
 
   function getIngredients(recipe) {
     if (recipe.ingredients) return recipe.ingredients;
