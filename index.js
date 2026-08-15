@@ -129,7 +129,7 @@
               <label class="scale__label" for="${scaleId}-coffee">Coffee</label>
               <div class="scale__control">
                 <button class="scale__step" type="button" data-direction="-1" aria-label="Decrease coffee">−</button>
-                <input id="${scaleId}-coffee" type="number" inputmode="decimal" min="5" max="50" step="0.1" value="${baseCoffee}" aria-describedby="${scaleId}-help ${scaleId}-error">
+                <input id="${scaleId}-coffee" type="number" inputmode="decimal" min="5" step="0.1" value="${baseCoffee}" aria-describedby="${scaleId}-help ${scaleId}-error">
                 <span>g</span>
                 <button class="scale__step" type="button" data-direction="1" aria-label="Increase coffee">+</button>
               </div>
@@ -295,7 +295,6 @@
     const details = item.querySelector(".recipe__details");
     const instructions = item.querySelector(".recipe__instruction-list");
     const minimum = 5;
-    const maximum = 50;
     const step = 0.5;
     let lastValidCoffee = baseCoffee;
 
@@ -329,19 +328,19 @@
 
     input.addEventListener("input", () => {
       const coffee = Number(input.value);
-      if (Number.isFinite(coffee) && coffee >= minimum && coffee <= maximum) updateCoffee(coffee);
+      if (Number.isFinite(coffee) && coffee >= minimum) updateCoffee(coffee);
     });
     input.addEventListener("change", () => {
       const coffee = Number(input.value);
-      if (!Number.isFinite(coffee) || coffee < minimum || coffee > maximum) {
-        error.textContent = `Enter an amount between ${formatAmount(minimum, "coffee")} and ${formatAmount(maximum, "coffee")}.`;
+      if (!Number.isFinite(coffee) || coffee < minimum) {
+        error.textContent = `Enter an amount of at least ${formatAmount(minimum, "coffee")}.`;
         input.setAttribute("aria-invalid", "true");
         return;
       }
       updateCoffee(coffee);
     });
-    item.querySelectorAll(".scale__step").forEach(button => button.addEventListener("click", () => updateCoffee(Math.min(maximum, Math.max(minimum, Math.round((lastValidCoffee + Number(button.dataset.direction) * step) * 10) / 10)))));
-    item.querySelectorAll(".scale__presets button").forEach(button => button.addEventListener("click", () => updateCoffee(Math.min(maximum, Math.max(minimum, baseCoffee * Number(button.dataset.factor))))));
+    item.querySelectorAll(".scale__step").forEach(button => button.addEventListener("click", () => updateCoffee(Math.max(minimum, Math.round((lastValidCoffee + Number(button.dataset.direction) * step) * 10) / 10))));
+    item.querySelectorAll(".scale__presets button").forEach(button => button.addEventListener("click", () => updateCoffee(Math.max(minimum, baseCoffee * Number(button.dataset.factor)))));
     reset.addEventListener("click", () => updateCoffee(baseCoffee));
     renderScale(baseCoffee);
   }
