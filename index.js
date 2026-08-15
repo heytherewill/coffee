@@ -1,6 +1,7 @@
 (async function main() {
   const recipesContainer = document.querySelector("#recipes");
   const recipeCount = document.querySelector("#recipe-count");
+  let wakeLock = null;
 
   try {
     const response = await fetch("recipes.json");
@@ -45,6 +46,7 @@
         const isOpen = instructions.classList.toggle("visible");
         button.setAttribute("aria-expanded", String(isOpen));
         button.textContent = isOpen ? "Hide recipe" : "View recipe";
+        if (isOpen) requestWakeLock();
       });
       list.appendChild(item);
     });
@@ -70,4 +72,20 @@
     }
     return [hours && `${hours}h`, minutes && `${minutes}m`, remainingSeconds && `${remainingSeconds}s`].filter(Boolean).join(" ");
   }
+
+  async function requestWakeLock() {
+    if (!("wakeLock" in navigator) || wakeLock) return;
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    } catch (error) {
+      // Some browsers require an explicit interaction or do not support Wake Lock.
+    }
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && document.querySelector(".instructions.visible")) {
+      requestWakeLock();
+    }
+  });
 })();
