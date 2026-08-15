@@ -76,7 +76,9 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgb(255 250 243 / 72%);
+  transition: box-shadow .2s ease, border-color .2s ease;
 }
+.filters:focus-within { border-color: #cdb9a6; box-shadow: 0 6px 18px rgb(62 32 15 / 7%); }
 
 .filter-search, .filter-select { display: grid; gap: .35rem; }
 .filters label { color: var(--muted-coffee); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
@@ -94,6 +96,8 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
 .filters input:focus, .filters select:focus { border-color: var(--caramel); outline: 3px solid rgb(234 183 127 / 48%); outline-offset: 1px; }
 .clear-filters { min-height: 43px; padding: .55rem .25rem; border: 0; color: var(--muted-coffee); background: transparent; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
 .clear-filters:hover, .clear-filters:focus-visible { color: var(--coffee); }
+.clear-filters { transition: color .18s ease, transform .18s ease; }
+.clear-filters:hover { transform: translateY(-1px); }
 .empty-state { padding: 2.5rem 1.5rem; border: 1px dashed #cdb9a6; border-radius: 12px; color: var(--muted-coffee); text-align: center; }
 .empty-state p { margin: 0; }
 .empty-state button { margin-top: .8rem; border: 0; color: var(--coffee); background: transparent; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
@@ -107,7 +111,9 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
   border-radius: 12px;
   background: var(--paper);
   box-shadow: var(--shadow);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
+.recipe:hover { border-color: #d5bda7; box-shadow: 0 14px 30px rgb(62 32 15 / 14%); transform: translateY(-2px); }
 
 .recipe__summary {
   display: grid;
@@ -123,7 +129,9 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
   object-fit: contain;
   /* Re-colour the original blue line drawings to the menu's muted coffee brown. */
   filter: hue-rotate(145deg) saturate(35%) brightness(74%);
+  transition: transform .25s ease;
 }
+.recipe:hover .recipe__image { transform: scale(1.04) rotate(-2deg); }
 .recipe__name { font-size: clamp(1.7rem, 4vw, 2.2rem); font-weight: 550; }
 
 .recipe__details {
@@ -155,7 +163,7 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
 .recipe__toggle:hover, .recipe__toggle:focus-visible { color: var(--paper); background: var(--coffee); }
 .recipe__toggle:focus-visible { outline: 3px solid #eab77f; outline-offset: 3px; }
 
-.instructions { display: none; padding: 0 1rem 1.2rem 7.25rem; border-top: 1px solid var(--line); }
+.instructions { display: none; padding: 0 1rem 1.2rem 7.25rem; border-top: 1px solid var(--line); transform-origin: top; }
 .instructions.visible { display: block; }
 .instructions h4 { margin: 1rem 0 .5rem; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; }
 .instructions ol { margin: 0; padding-left: 1.25rem; }
@@ -172,7 +180,7 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
 }
 .scale__toggle { min-height: 40px; padding: .45rem .8rem; border-radius: 999px; font-size: .82rem; }
 .scale__toggle:hover, .scale__toggle:focus-visible { color: var(--paper); background: var(--coffee); }
-.scale__body { margin-top: .75rem; padding: 1rem; border-radius: 9px; background: #f4eadc; }
+.scale__body { margin-top: .75rem; padding: 1rem; border-radius: 9px; background: #f4eadc; transform-origin: top; }
 .scale__body[hidden] { display: none; }
 .scale__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .scale__heading h4 { margin-top: 0; }
@@ -192,6 +200,21 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
 .scale__results div { display: flex; justify-content: space-between; gap: 1rem; padding-top: .4rem; border-top: 1px solid #ddcbb9; }
 .scale__results dt { color: var(--muted-coffee); }
 .scale__results dd { margin: 0; font-weight: 700; }
+
+@keyframes value-update {
+  from { opacity: .45; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.is-updating { animation: value-update 180ms ease-out; }
+
+.filters input, .filters select, .scale__control input { transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease; }
+.scale__toggle, .scale__step, .scale__presets button, .scale__reset, .empty-state button { transition: color .18s ease, background-color .18s ease, border-color .18s ease, transform .18s ease; }
+.scale__toggle:hover, .scale__step:hover, .scale__presets button:hover { transform: translateY(-1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
 
 footer { padding: 1.5rem; color: var(--muted-coffee); text-align: center; font-size: .78rem; font-style: italic; }
 

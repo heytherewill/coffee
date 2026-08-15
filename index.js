@@ -61,7 +61,8 @@
       .map(({ recipe }) => recipe);
 
     recipeCount.textContent = `${matches.length} ${matches.length === 1 ? "recipe" : "recipes"}`;
-    clearFiltersButton.hidden = !state.query && !state.method && !state.time && !state.temperature;
+    animateUpdate(recipeCount);
+    setAnimatedVisibility(clearFiltersButton, Boolean(state.query || state.method || state.time || state.temperature));
     updateRecipeList(matches);
     if (updateUrl) writeFiltersToUrl(state);
   }
@@ -136,7 +137,8 @@
       const button = item.querySelector("button");
       const instructions = item.querySelector(".instructions");
       button.addEventListener("click", () => {
-        const isOpen = instructions.classList.toggle("visible");
+        const isOpen = !instructions.classList.contains("visible");
+        setExpanded(instructions, isOpen);
         button.setAttribute("aria-expanded", String(isOpen));
         button.textContent = isOpen ? "Hide recipe" : "View recipe";
         if (isOpen) requestWakeLock();
@@ -154,9 +156,17 @@
   }
 
   function updateRecipeList(recipes) {
-    recipeList.hidden = recipes.length === 0;
-    emptyState.hidden = recipes.length !== 0;
-    if (recipes.length) recipeList.replaceChildren(...recipes.map(recipe => recipeElements.get(recipe)));
+    const items = recipes.map(recipe => recipeElements.get(recipe));
+    if (recipes.length) {
+      recipeList.replaceChildren(...items);
+      setAnimatedVisibility(recipeList, true);
+      setAnimatedVisibility(emptyState, false);
+      animateUpdate(...items);
+    } else {
+      setAnimatedVisibility(recipeList, false);
+      setAnimatedVisibility(emptyState, true);
+      animateUpdate(emptyState);
+    }
   }
 
   function searchScore(recipe, query) {
@@ -269,13 +279,13 @@
 
     toggle.addEventListener("click", () => {
       const isOpen = panel.hidden;
-      panel.hidden = !isOpen;
+      setExpanded(panel, isOpen, true);
       toggle.setAttribute("aria-expanded", String(isOpen));
       toggle.textContent = isOpen ? "Hide scaling" : "Scale this brew";
       if (isOpen) requestWakeLock();
     });
 
-    function renderScale(coffee) {
+    function renderScale(coffee, shouldAnimate = false) {
       const ingredients = scaledIngredients(recipe, coffee);
       const water = ingredients.find(ingredient => ingredient.id === "water");
       const ratioValue = water ? water.amount / coffee : 0;
@@ -284,6 +294,7 @@
       results.innerHTML = ingredients.filter(ingredient => ingredient.id !== "coffee" && ingredient.scalable).map(ingredient => `<div><dt>${ingredient.label}</dt><dd>${formatAmount(ingredient.amount, ingredient.id)}</dd></div>`).join("");
       ratio.textContent = water ? `Ratio 1:${ratioValue.toFixed(1)}` : "";
       reset.hidden = coffee === baseCoffee;
+      if (shouldAnimate) animateUpdate(details, results, instructions);
     }
 
     function updateCoffee(coffee) {
@@ -291,7 +302,7 @@
       input.value = coffee;
       error.textContent = "";
       input.removeAttribute("aria-invalid");
-      renderScale(coffee);
+      renderScale(coffee, true);
     }
 
     input.addEventListener("input", () => {
@@ -311,6 +322,75 @@
     item.querySelectorAll(".scale__presets button").forEach(button => button.addEventListener("click", () => updateCoffee(Math.min(maximum, Math.max(minimum, baseCoffee * Number(button.dataset.factor))))));
     reset.addEventListener("click", () => updateCoffee(baseCoffee));
     renderScale(baseCoffee);
+  }
+
+  function animateUpdate(...elements) {
+    elements.forEach(element => {
+      element.classList.remove("is-updating");
+      void element.offsetWidth;
+      element.classList.add("is-updating");
+    });
+  }
+
+  function motionIsReduced() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function setExpanded(element, expanded, usesHiddenAttribute = false) {
+    element.getAnimations().forEach(animation => animation.cancel());
+    if (motionIsReduced()) {
+      if (usesHiddenAttribute) element.hidden = !expanded;
+      element.classList.toggle("visible", expanded);
+      return;
+    }
+
+    if (expanded) {
+      if (usesHiddenAttribute) element.hidden = false;
+      element.classList.add("visible");
+      element.style.height = "0px";
+      element.style.overflow = "hidden";
+      const animation = element.animate([
+        { height: "0px", opacity: 0, transform: "translateY(-6px)" },
+        { height: `${element.scrollHeight}px`, opacity: 1, transform: "translateY(0)" }
+      ], { duration: 260, easing: "cubic-bezier(.2, .8, .2, 1)" });
+      animation.onfinish = () => {
+        element.style.height = "";
+        element.style.overflow = "";
+      };
+      return;
+    }
+
+    const height = element.getBoundingClientRect().height;
+    element.style.height = `${height}px`;
+    element.style.overflow = "hidden";
+    const animation = element.animate([
+      { height: `${height}px`, opacity: 1, transform: "translateY(0)" },
+      { height: "0px", opacity: 0, transform: "translateY(-6px)" }
+    ], { duration: 210, easing: "ease-in" });
+    animation.onfinish = () => {
+      element.classList.remove("visible");
+      if (usesHiddenAttribute) element.hidden = true;
+      element.style.height = "";
+      element.style.overflow = "";
+    };
+  }
+
+  function setAnimatedVisibility(element, visible) {
+    element.getAnimations().forEach(animation => animation.cancel());
+    if (visible) {
+      element.hidden = false;
+      animateUpdate(element);
+      return;
+    }
+    if (element.hidden || motionIsReduced()) {
+      element.hidden = true;
+      return;
+    }
+    const animation = element.animate([
+      { opacity: 1, transform: "translateY(0)" },
+      { opacity: 0, transform: "translateY(-4px)" }
+    ], { duration: 150, easing: "ease-in" });
+    animation.onfinish = () => { element.hidden = true; };
   }
 
   function formatTime(seconds, style = "short") {
