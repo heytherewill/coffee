@@ -1,45 +1,50 @@
 [
-    {
-        "method": "aeropress",
-        "name": "Daily driver",
-        "grinderSetting": 65,
-        "grounds": 11,
-        "water": 200,
-        "timeInSeconds": 200,
-        "temperature": "hot",
-        "instructions": [
-            "TODO: Add actual instructions"
-        ]
-    },
-    {
-        "method": "mizudashi",
-        "name": "Cold Brew",
-        "grinderSetting": 125,
-        "grounds": 60,
-        "water": 800,
-        "timeInSeconds": 86400,
-        "temperature": "cold",
-        "instructions": [
-            "Insert the ground beans in the Mizudashi filter.",
-            "Pour {{water}} ml of room temperature water.",
-            "Let it rest for {{time}}."
-        ]
-    },
-      {
-        "method": "v60",
-        "name": "Daniela's Mugen",
-        "grinderSetting": 100,
-        "grounds" : 17,
-        "water" : 290,
-        "timeInSeconds" : 100,
-        "temperature": "hot",
-        "instructions" : [
-            "Rinse the filter with hot water.",
-            "Throw away the water from the pitcher.",
-            "Insert the ground beans in the filter.",
-            "Start a timer.",
-            "Pour {{water}} ml for 40 seconds and wait the remaing time.",
-            "Wait for 2 to 3 minutes before serving."
-        ]
-    }
+  {
+    "method": "aeropress",
+    "name": "Daily driver",
+    "grinderSetting": 65,
+    "timeInSeconds": 200,
+    "temperature": "hot",
+    "ingredients": [
+      { "id": "coffee", "label": "Coffee", "amount": 11, "scalable": true },
+      { "id": "water", "label": "Water", "amount": 200, "scalable": true }
+    ],
+    "instructions": [
+      "Add {{coffee}} of coffee to the AeroPress.",
+      "Pour {{water}} of water and brew for {{time}}."
+    ]
+  },
+  {
+    "method": "mizudashi",
+    "name": "Cold Brew",
+    "grinderSetting": 125,
+    "timeInSeconds": 86400,
+    "temperature": "cold",
+    "ingredients": [
+      { "id": "coffee", "label": "Coffee", "amount": 60, "scalable": true },
+      { "id": "water", "label": "Water", "amount": 800, "scalable": true }
+    ],
+    "instructions": [
+      "Insert {{coffee}} of ground coffee in the Mizudashi filter.",
+      "Pour {{water}} of room-temperature water.",
+      "Let it rest for {{time}}."
+    ]
+  },
+  {
+    "method": "v60",
+    "name": "Daniela's Mugen",
+    "grinderSetting": 100,
+    "timeInSeconds": 100,
+    "temperature": "hot",
+    "ingredients": [
+      { "id": "coffee", "label": "Coffee", "amount": 17, "scalable": true },
+      { "id": "water", "label": "Water", "amount": 290, "scalable": true }
+    ],
+    "instructions": [
+      "Rinse the filter with hot water and discard the rinse water.",
+      "Add {{coffee}} of coffee to the filter.",
+      "Start a timer and pour {{water}} of water for 40 seconds.",
+      "Wait for the remaining brew time, then serve."
+    ]
+  }
 ]

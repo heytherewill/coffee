@@ -100,22 +100,37 @@
       item.className = "recipe";
       const instructionsId = `instructions-${index}`;
       const toggleId = `toggle-${index}`;
+      const scaleId = `scale-${index}`;
+      const baseCoffee = coffeeIngredient(recipe).amount;
       item.innerHTML = `
         <div class="recipe__summary">
           <img class="recipe__image" src="img/${recipe.method}.png" alt="${methodLabel(recipe.method)} coffee brewer">
           <div>
             <h3 class="recipe__name">${recipe.name}</h3>
-            <p class="recipe__details">
-              <span class="recipe__detail"><i class="fa-solid fa-weight-scale" aria-hidden="true"></i>${recipe.grounds} g coffee</span>
-              <span class="recipe__detail"><i class="fa-solid fa-droplet" aria-hidden="true"></i>${recipe.water} ml water</span>
-              <span class="recipe__detail"><i class="fa-solid fa-clock" aria-hidden="true"></i>${formatTime(recipe.timeInSeconds)}</span>
-            </p>
+            <p class="recipe__details">${recipeDetails(recipe, getIngredients(recipe))}</p>
           </div>
           <button class="recipe__toggle" id="${toggleId}" type="button" aria-expanded="false" aria-controls="${instructionsId}">View recipe</button>
         </div>
         <div class="instructions" id="${instructionsId}" role="region" aria-labelledby="${toggleId}">
+          <section class="scale" aria-labelledby="${scaleId}-heading">
+            <button class="scale__toggle" id="${scaleId}-toggle" type="button" aria-expanded="false" aria-controls="${scaleId}">Scale this brew</button>
+            <div class="scale__body" id="${scaleId}" hidden>
+              <div class="scale__heading"><h4 id="${scaleId}-heading">Make it your amount</h4><button class="scale__reset" type="button" hidden>Reset</button></div>
+              <label class="scale__label" for="${scaleId}-coffee">Coffee</label>
+              <div class="scale__control">
+                <button class="scale__step" type="button" data-direction="-1" aria-label="Decrease coffee">−</button>
+                <input id="${scaleId}-coffee" type="number" inputmode="decimal" min="5" max="50" step="0.1" value="${baseCoffee}" aria-describedby="${scaleId}-help ${scaleId}-error">
+                <span>g</span>
+                <button class="scale__step" type="button" data-direction="1" aria-label="Increase coffee">+</button>
+              </div>
+              <p class="scale__help" id="${scaleId}-help">Original: ${formatAmount(baseCoffee, "coffee")} · <span class="scale__ratio"></span></p>
+              <p class="scale__error" id="${scaleId}-error" role="alert"></p>
+              <div class="scale__presets" aria-label="Coffee amount presets"><button type="button" data-factor="0.5">½</button><button type="button" data-factor="1">Original</button><button type="button" data-factor="2">2×</button></div>
+              <dl class="scale__results"></dl>
+            </div>
+          </section>
           <h4>Method</h4>
-          <ol>${instructionItems(recipe)}</ol>
+          <ol class="recipe__instruction-list">${instructionItems(recipe, getIngredients(recipe))}</ol>
         </div>`;
 
       const button = item.querySelector("button");
@@ -126,6 +141,7 @@
         button.textContent = isOpen ? "Hide recipe" : "View recipe";
         if (isOpen) requestWakeLock();
       });
+      attachScaling(item, recipe, baseCoffee);
       recipeElements.set(recipe, item);
       recipeList.appendChild(item);
     });
@@ -152,7 +168,7 @@
       { text: recipe.name, weight: 120 },
       { text: `${recipe.method} ${methodLabel(recipe.method)} ${recipe.method === "mizudashi" ? "cold brew" : ""}`, weight: 90 },
       { text: recipe.instructions.join(" "), weight: 50 },
-      { text: `${recipe.temperature} ${recipe.grounds} g ${recipe.grounds} grams coffee ${recipe.water} ml water ${formatTime(recipe.timeInSeconds)} ${formatTime(recipe.timeInSeconds, "long")} ${recipe.grinderSetting} clicks grinder`, weight: 35 }
+      { text: `${recipe.temperature} ${getIngredients(recipe).map(ingredient => `${ingredient.amount} g ${ingredient.label}`).join(" ")} ${formatTime(recipe.timeInSeconds)} ${formatTime(recipe.timeInSeconds, "long")} ${recipe.grinderSetting} clicks grinder`, weight: 35 }
     ].map(field => ({ ...field, text: normalize(field.text) }));
     const fullText = fields.map(field => field.text).join(" ");
     if (!tokens.every(token => tokenMatches(token, fullText))) return -1;
@@ -189,9 +205,112 @@
 
   function methodLabel(method) { return methodLabels[method] || method.replace(/\b\w/g, letter => letter.toUpperCase()); }
 
-  function instructionItems(recipe) {
-    const allInstructions = [`Grind the beans with the grinder set at ${recipe.grinderSetting} clicks.`, ...recipe.instructions.map(instruction => instruction.replace("{{time}}", formatTime(recipe.timeInSeconds, "long")).replace("{{water}}", recipe.water))];
+  function getIngredients(recipe) {
+    if (recipe.ingredients) return recipe.ingredients;
+    return [
+      { id: "coffee", label: "Coffee", amount: recipe.grounds, scalable: true },
+      { id: "water", label: "Water", amount: recipe.water, scalable: true }
+    ];
+  }
+
+  function coffeeIngredient(recipe) {
+    return getIngredients(recipe).find(ingredient => ingredient.id === "coffee");
+  }
+
+  function recipeDetails(recipe, ingredients) {
+    const icons = { coffee: "fa-weight-scale", water: "fa-droplet", ice: "fa-snowflake" };
+    const details = ingredients.map(ingredient => `<span class="recipe__detail"><i class="fa-solid ${icons[ingredient.id] || "fa-circle"}" aria-hidden="true"></i>${formatAmount(ingredient.amount, ingredient.id)} ${ingredient.label.toLowerCase()}</span>`);
+    details.push(`<span class="recipe__detail"><i class="fa-solid fa-clock" aria-hidden="true"></i>${formatTime(recipe.timeInSeconds)}</span>`);
+    return details.join("");
+  }
+
+  function scaledIngredients(recipe, desiredCoffee) {
+    const baseCoffee = coffeeIngredient(recipe);
+    const factor = desiredCoffee / baseCoffee.amount;
+    return getIngredients(recipe).map(ingredient => ({
+      ...ingredient,
+      amount: ingredient.id === baseCoffee.id ? desiredCoffee : ingredient.scalable ? roundIngredient(ingredient.amount * factor, ingredient.id) : ingredient.amount
+    }));
+  }
+
+  function roundIngredient(amount, id) { return id === "coffee" ? Math.round(amount * 10) / 10 : Math.round(amount); }
+
+  function formatAmount(amount, id) {
+    const decimals = id === "coffee" && amount % 1 !== 0 ? 1 : 0;
+    return `${Number(amount).toFixed(decimals)} g`;
+  }
+
+  function instructionItems(recipe, ingredients) {
+    const values = Object.fromEntries(ingredients.map(ingredient => [ingredient.id, formatAmount(ingredient.amount, ingredient.id)]));
+    const allInstructions = [
+      `Grind the beans with the grinder set at ${recipe.grinderSetting} clicks.`,
+      ...recipe.instructions.map(instruction => instruction.replace(/{{([^}]+)}}/g, (match, key) => {
+        if (key === "time") return formatTime(recipe.timeInSeconds, "long");
+        return values[key] ?? match;
+      }))
+    ];
     return allInstructions.map(instruction => `<li>${instruction}</li>`).join("");
+  }
+
+  function attachScaling(item, recipe, baseCoffee) {
+    const panel = item.querySelector(".scale__body");
+    const toggle = item.querySelector(".scale__toggle");
+    const input = item.querySelector(".scale__control input");
+    const reset = item.querySelector(".scale__reset");
+    const results = item.querySelector(".scale__results");
+    const ratio = item.querySelector(".scale__ratio");
+    const error = item.querySelector(".scale__error");
+    const details = item.querySelector(".recipe__details");
+    const instructions = item.querySelector(".recipe__instruction-list");
+    const minimum = 5;
+    const maximum = 50;
+    const step = 0.5;
+    let lastValidCoffee = baseCoffee;
+
+    toggle.addEventListener("click", () => {
+      const isOpen = panel.hidden;
+      panel.hidden = !isOpen;
+      toggle.setAttribute("aria-expanded", String(isOpen));
+      toggle.textContent = isOpen ? "Hide scaling" : "Scale this brew";
+      if (isOpen) requestWakeLock();
+    });
+
+    function renderScale(coffee) {
+      const ingredients = scaledIngredients(recipe, coffee);
+      const water = ingredients.find(ingredient => ingredient.id === "water");
+      const ratioValue = water ? water.amount / coffee : 0;
+      details.innerHTML = recipeDetails(recipe, ingredients);
+      instructions.innerHTML = instructionItems(recipe, ingredients);
+      results.innerHTML = ingredients.filter(ingredient => ingredient.id !== "coffee" && ingredient.scalable).map(ingredient => `<div><dt>${ingredient.label}</dt><dd>${formatAmount(ingredient.amount, ingredient.id)}</dd></div>`).join("");
+      ratio.textContent = water ? `Ratio 1:${ratioValue.toFixed(1)}` : "";
+      reset.hidden = coffee === baseCoffee;
+    }
+
+    function updateCoffee(coffee) {
+      lastValidCoffee = coffee;
+      input.value = coffee;
+      error.textContent = "";
+      input.removeAttribute("aria-invalid");
+      renderScale(coffee);
+    }
+
+    input.addEventListener("input", () => {
+      const coffee = Number(input.value);
+      if (Number.isFinite(coffee) && coffee >= minimum && coffee <= maximum) updateCoffee(coffee);
+    });
+    input.addEventListener("change", () => {
+      const coffee = Number(input.value);
+      if (!Number.isFinite(coffee) || coffee < minimum || coffee > maximum) {
+        error.textContent = `Enter an amount between ${formatAmount(minimum, "coffee")} and ${formatAmount(maximum, "coffee")}.`;
+        input.setAttribute("aria-invalid", "true");
+        return;
+      }
+      updateCoffee(coffee);
+    });
+    item.querySelectorAll(".scale__step").forEach(button => button.addEventListener("click", () => updateCoffee(Math.min(maximum, Math.max(minimum, Math.round((lastValidCoffee + Number(button.dataset.direction) * step) * 10) / 10)))));
+    item.querySelectorAll(".scale__presets button").forEach(button => button.addEventListener("click", () => updateCoffee(Math.min(maximum, Math.max(minimum, baseCoffee * Number(button.dataset.factor))))));
+    reset.addEventListener("click", () => updateCoffee(baseCoffee));
+    renderScale(baseCoffee);
   }
 
   function formatTime(seconds, style = "short") {
