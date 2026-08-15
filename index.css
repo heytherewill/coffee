@@ -84,7 +84,13 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
   padding: 1rem;
 }
 
-.recipe__image { width: 82px; height: 82px; object-fit: contain; filter: sepia(.22) saturate(.85); }
+.recipe__image {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+  /* Re-colour the original blue line drawings to the menu's muted coffee brown. */
+  filter: hue-rotate(145deg) saturate(35%) brightness(74%);
+}
 .recipe__name { font-size: clamp(1.7rem, 4vw, 2.2rem); font-weight: 550; }
 
 .recipe__details {
