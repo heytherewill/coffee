@@ -1,22 +1,100 @@
 (async function main() {
   const recipesContainer = document.querySelector("#recipes");
   const recipeCount = document.querySelector("#recipe-count");
+  const filters = document.querySelector("#filters");
+  const searchInput = document.querySelector("#recipe-search");
+  const methodFilter = document.querySelector("#method-filter");
+  const timeFilter = document.querySelector("#time-filter");
+  const temperatureFilter = document.querySelector("#temperature-filter");
+  const clearFiltersButton = document.querySelector("#clear-filters");
+  const methodLabels = { aeropress: "AeroPress", v60: "V60", mizudashi: "Mizudashi" };
+  const recipeElements = new Map();
+  let allRecipes = [];
+  let recipeList;
+  let emptyState;
   let wakeLock = null;
 
   try {
     const response = await fetch("recipes.json");
     if (!response.ok) throw new Error("Could not load recipes");
-    const recipes = await response.json();
-    recipeCount.textContent = `${recipes.length} recipes`;
-    renderRecipes(recipes);
+    allRecipes = await response.json();
+    populateMethods(allRecipes);
+    createRecipeList(allRecipes);
+    readFiltersFromUrl();
+    applyFilters();
   } catch (error) {
     recipesContainer.textContent = "The menu is taking a coffee break. Please try again shortly.";
   }
 
-  function renderRecipes(recipes) {
-    const list = document.createElement("ul");
-    list.className = "recipe-list";
+  filters.addEventListener("submit", event => event.preventDefault());
+  filters.addEventListener("input", applyFilters);
+  filters.addEventListener("change", applyFilters);
+  clearFiltersButton.addEventListener("click", clearFilters);
+  window.addEventListener("popstate", () => {
+    readFiltersFromUrl();
+    applyFilters(false);
+  });
 
+  function populateMethods(recipes) {
+    [...new Set(recipes.map(recipe => recipe.method))].forEach(method => {
+      const option = document.createElement("option");
+      option.value = method;
+      option.textContent = methodLabel(method);
+      methodFilter.appendChild(option);
+    });
+  }
+
+  function readFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    searchInput.value = params.get("q") || "";
+    methodFilter.value = [...methodFilter.options].some(option => option.value === params.get("method")) ? params.get("method") : "";
+    timeFilter.value = ["quick", "medium", "ahead"].includes(params.get("time")) ? params.get("time") : "";
+    temperatureFilter.value = ["hot", "cold"].includes(params.get("temperature")) ? params.get("temperature") : "";
+  }
+
+  function applyFilters(updateUrl = true) {
+    const state = { query: searchInput.value.trim(), method: methodFilter.value, time: timeFilter.value, temperature: temperatureFilter.value };
+    const matches = allRecipes
+      .map((recipe, index) => ({ recipe, index, score: searchScore(recipe, state.query) }))
+      .filter(({ recipe, score }) => score !== -1 && (!state.method || recipe.method === state.method) && matchesTime(recipe, state.time) && (!state.temperature || recipe.temperature === state.temperature))
+      .sort((a, b) => state.query ? b.score - a.score || a.index - b.index : a.index - b.index)
+      .map(({ recipe }) => recipe);
+
+    recipeCount.textContent = `${matches.length} ${matches.length === 1 ? "recipe" : "recipes"}`;
+    clearFiltersButton.hidden = !state.query && !state.method && !state.time && !state.temperature;
+    updateRecipeList(matches);
+    if (updateUrl) writeFiltersToUrl(state);
+  }
+
+  function matchesTime(recipe, time) {
+    if (time === "quick") return recipe.timeInSeconds < 300;
+    if (time === "medium") return recipe.timeInSeconds >= 300 && recipe.timeInSeconds < 900;
+    if (time === "ahead") return recipe.timeInSeconds >= 900;
+    return true;
+  }
+
+  function writeFiltersToUrl({ query, method, time, temperature }) {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (method) params.set("method", method);
+    if (time) params.set("time", time);
+    if (temperature) params.set("temperature", temperature);
+    const queryString = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${queryString ? `?${queryString}` : ""}`);
+  }
+
+  function clearFilters() {
+    searchInput.value = "";
+    methodFilter.value = "";
+    timeFilter.value = "";
+    temperatureFilter.value = "";
+    applyFilters();
+    searchInput.focus();
+  }
+
+  function createRecipeList(recipes) {
+    recipeList = document.createElement("ul");
+    recipeList.className = "recipe-list";
     recipes.forEach((recipe, index) => {
       const item = document.createElement("li");
       item.className = "recipe";
@@ -24,7 +102,7 @@
       const toggleId = `toggle-${index}`;
       item.innerHTML = `
         <div class="recipe__summary">
-          <img class="recipe__image" src="img/${recipe.method}.png" alt="${recipe.method} coffee brewer">
+          <img class="recipe__image" src="img/${recipe.method}.png" alt="${methodLabel(recipe.method)} coffee brewer">
           <div>
             <h3 class="recipe__name">${recipe.name}</h3>
             <p class="recipe__details">
@@ -48,18 +126,71 @@
         button.textContent = isOpen ? "Hide recipe" : "View recipe";
         if (isOpen) requestWakeLock();
       });
-      list.appendChild(item);
+      recipeElements.set(recipe, item);
+      recipeList.appendChild(item);
     });
-    recipesContainer.replaceChildren(list);
+    emptyState = document.createElement("div");
+    emptyState.className = "empty-state";
+    emptyState.hidden = true;
+    emptyState.innerHTML = "<p>No recipes match those filters.</p><button type=\"button\">Clear filters</button>";
+    emptyState.querySelector("button").addEventListener("click", clearFilters);
+    recipesContainer.replaceChildren(recipeList, emptyState);
   }
 
+  function updateRecipeList(recipes) {
+    recipeList.hidden = recipes.length === 0;
+    emptyState.hidden = recipes.length !== 0;
+    if (recipes.length) recipeList.replaceChildren(...recipes.map(recipe => recipeElements.get(recipe)));
+  }
+
+  function searchScore(recipe, query) {
+    if (!query) return 0;
+    const normalizedQuery = normalize(query);
+    const tokens = normalizedQuery.split(" ").filter(token => token.length > 2 || /^\d+$/.test(token) || token === "v60");
+    if (!tokens.length) return 0;
+    const fields = [
+      { text: recipe.name, weight: 120 },
+      { text: `${recipe.method} ${methodLabel(recipe.method)} ${recipe.method === "mizudashi" ? "cold brew" : ""}`, weight: 90 },
+      { text: recipe.instructions.join(" "), weight: 50 },
+      { text: `${recipe.temperature} ${recipe.grounds} g ${recipe.grounds} grams coffee ${recipe.water} ml water ${formatTime(recipe.timeInSeconds)} ${formatTime(recipe.timeInSeconds, "long")} ${recipe.grinderSetting} clicks grinder`, weight: 35 }
+    ].map(field => ({ ...field, text: normalize(field.text) }));
+    const fullText = fields.map(field => field.text).join(" ");
+    if (!tokens.every(token => tokenMatches(token, fullText))) return -1;
+
+    return fields.reduce((score, field) => {
+      if (field.text.includes(normalizedQuery)) return score + field.weight * 3;
+      return score + tokens.reduce((tokenScore, token) => tokenScore + (field.text.includes(token) ? field.weight : 0), 0);
+    }, 0);
+  }
+
+  function tokenMatches(token, text) {
+    if (text.includes(token)) return true;
+    if (token.length < 4 || /^\d+$/.test(token)) return false;
+    return text.split(" ").some(word => word.length >= 4 && levenshtein(token, word) <= (token.length >= 7 ? 2 : 1));
+  }
+
+  function normalize(value) {
+    return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/(\d)\s*(ml|g|grams?|minutes?|mins?|seconds?|secs?|clicks?)/g, "$1 $2")
+      .replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  function levenshtein(first, second) {
+    let previous = Array.from({ length: second.length + 1 }, (_, index) => index);
+    for (let row = 1; row <= first.length; row += 1) {
+      const current = [row];
+      for (let column = 1; column <= second.length; column += 1) {
+        current[column] = Math.min(current[column - 1] + 1, previous[column] + 1, previous[column - 1] + (first[row - 1] === second[column - 1] ? 0 : 1));
+      }
+      previous = current;
+    }
+    return previous[second.length];
+  }
+
+  function methodLabel(method) { return methodLabels[method] || method.replace(/\b\w/g, letter => letter.toUpperCase()); }
+
   function instructionItems(recipe) {
-    const allInstructions = [
-      `Grind the beans with the grinder set at ${recipe.grinderSetting} clicks.`,
-      ...recipe.instructions.map(instruction => instruction
-        .replace("{{time}}", formatTime(recipe.timeInSeconds, "long"))
-        .replace("{{water}}", recipe.water))
-    ];
+    const allInstructions = [`Grind the beans with the grinder set at ${recipe.grinderSetting} clicks.`, ...recipe.instructions.map(instruction => instruction.replace("{{time}}", formatTime(recipe.timeInSeconds, "long")).replace("{{water}}", recipe.water))];
     return allInstructions.map(instruction => `<li>${instruction}</li>`).join("");
   }
 
@@ -67,9 +198,7 @@
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    if (style === "long") {
-      return [hours && `${hours} hour${hours === 1 ? "" : "s"}`, minutes && `${minutes} minute${minutes === 1 ? "" : "s"}`, remainingSeconds && `${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`].filter(Boolean).join(" ");
-    }
+    if (style === "long") return [hours && `${hours} hour${hours === 1 ? "" : "s"}`, minutes && `${minutes} minute${minutes === 1 ? "" : "s"}`, remainingSeconds && `${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`].filter(Boolean).join(" ");
     return [hours && `${hours}h`, minutes && `${minutes}m`, remainingSeconds && `${remainingSeconds}s`].filter(Boolean).join(" ");
   }
 
@@ -84,8 +213,6 @@
   }
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && document.querySelector(".instructions.visible")) {
-      requestWakeLock();
-    }
+    if (document.visibilityState === "visible" && document.querySelector(".instructions.visible")) requestWakeLock();
   });
 })();

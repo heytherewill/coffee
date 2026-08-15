@@ -6,6 +6,7 @@
         "grounds": 11,
         "water": 200,
         "timeInSeconds": 200,
+        "temperature": "hot",
         "instructions": [
             "TODO: Add actual instructions"
         ]
@@ -17,6 +18,7 @@
         "grounds": 60,
         "water": 800,
         "timeInSeconds": 86400,
+        "temperature": "cold",
         "instructions": [
             "Insert the ground beans in the Mizudashi filter.",
             "Pour {{water}} ml of room temperature water.",
@@ -30,6 +32,7 @@
         "grounds" : 17,
         "water" : 290,
         "timeInSeconds" : 100,
+        "temperature": "hot",
         "instructions" : [
             "Rinse the filter with hot water.",
             "Throw away the water from the pitcher.",

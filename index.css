@@ -66,7 +66,40 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
 
 .recipe-count { margin: 0 0 .2rem; color: var(--muted-coffee); font-size: .85rem; white-space: nowrap; }
 
+.filters {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) repeat(3, minmax(9rem, .45fr)) auto;
+  gap: .8rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgb(255 250 243 / 72%);
+}
+
+.filter-search, .filter-select { display: grid; gap: .35rem; }
+.filters label { color: var(--muted-coffee); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.filters input, .filters select {
+  width: 100%;
+  min-height: 43px;
+  padding: .6rem .75rem;
+  border: 1px solid #cdb9a6;
+  border-radius: 7px;
+  color: var(--coffee);
+  background: var(--paper);
+  font: inherit;
+  font-size: .9rem;
+}
+.filters input:focus, .filters select:focus { border-color: var(--caramel); outline: 3px solid rgb(234 183 127 / 48%); outline-offset: 1px; }
+.clear-filters { min-height: 43px; padding: .55rem .25rem; border: 0; color: var(--muted-coffee); background: transparent; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
+.clear-filters:hover, .clear-filters:focus-visible { color: var(--coffee); }
+.empty-state { padding: 2.5rem 1.5rem; border: 1px dashed #cdb9a6; border-radius: 12px; color: var(--muted-coffee); text-align: center; }
+.empty-state p { margin: 0; }
+.empty-state button { margin-top: .8rem; border: 0; color: var(--coffee); background: transparent; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
 .recipe-list { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.recipe-list[hidden], .empty-state[hidden] { display: none; }
 
 .recipe {
   overflow: hidden;
@@ -137,4 +170,8 @@ footer { padding: 1.5rem; color: var(--muted-coffee); text-align: center; font-s
   .recipe__image { width: 64px; height: 64px; }
   .recipe__toggle { grid-column: 1 / -1; width: 100%; }
   .instructions { padding-left: 1.2rem; }
+  .menu__heading { align-items: start; }
+  .filters { grid-template-columns: 1fr 1fr; }
+  .filter-search { grid-column: 1 / -1; }
+  .clear-filters { grid-column: 1 / -1; justify-self: start; min-height: auto; padding: .1rem 0; }
 }
