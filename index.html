@@ -1,32 +1,37 @@
+<!doctype html>
 <html lang="en">
-    <head>
-        <!-- Viewport shenanigans -->
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="theme-color" content="#F7DDC6" />
-        
-        <!-- Fonts -->
-         <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Elms+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
-        <!-- Our CSS -->
-        <link rel="stylesheet" href="index.css">
-        <title>Receitinhas de café hmmmm</title>
-    </head>
-    <body>
-        <header>
-            <div id="siteName">
-                <h1>Coffee Recipes</h1>
-            </div>
-        </header>
-        <section id="recipes">
-        </section>
-        <footer>
-            Made with love and caffeine by Will and Dani
-        </footer>
-    </body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#56351f">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Elms+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <title>Coffee Recipes</title>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <p class="eyebrow">Will &amp; Dani's kitchen</p>
+        <h1>Coffee recipes</h1>
+        <p class="hero__intro">A small menu of dependable brews, measured for easy mornings.</p>
+      </div>
+    </header>
+    <main>
+      <section class="menu" aria-labelledby="menu-title">
+        <div class="menu__heading">
+          <div>
+            <p class="eyebrow">Choose a brew</p>
+            <h2 id="menu-title">Today’s coffee menu</h2>
+          </div>
+          <p id="recipe-count" class="recipe-count" aria-live="polite"></p>
+        </div>
+        <div id="recipes" aria-live="polite"></div>
+      </section>
+    </main>
+    <footer>Made with love and caffeine by Will and Dani</footer>
     <script src="https://kit.fontawesome.com/9547112b26.js" crossorigin="anonymous"></script>
-    <script src="/index.js"></script>
+    <script src="index.js"></script>
+  </body>
 </html>
