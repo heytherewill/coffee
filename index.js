@@ -146,6 +146,7 @@
               </div>
             </section>
             <button class="recipe__share" type="button">Share recipe</button>
+            ${sourceLink(recipe)}
             <p class="recipe__share-status" role="status" aria-live="polite"></p>
           </div>
           <h4>Method</h4>
@@ -333,6 +334,11 @@
     return details.join("");
   }
 
+  function sourceLink(recipe) {
+    if (!recipe.source) return "";
+    return `<a class="recipe__source" href="${recipe.source}" target="_blank" rel="noopener noreferrer" aria-label="View source for ${recipe.name}">View source</a>`;
+  }
+
   function scaledIngredients(recipe, desiredCoffee) {
     const baseCoffee = coffeeIngredient(recipe);
     const factor = desiredCoffee / baseCoffee.amount;
@@ -355,7 +361,12 @@
       `Grind the beans with the grinder set at ${recipe.grinderSetting} clicks.`,
       ...recipe.instructions.map(instruction => instruction.replace(/{{([^}]+)}}/g, (match, key) => {
         if (key === "time") return formatTime(recipe.timeInSeconds, "long");
-        return values[key] ?? match;
+        if (values[key]) return values[key];
+        const [ingredientId, factorValue] = key.split(":");
+        const ingredient = ingredients.find(candidate => candidate.id === ingredientId);
+        const factor = Number(factorValue);
+        if (!ingredient || !Number.isFinite(factor)) return match;
+        return formatAmount(roundIngredient(ingredient.amount * factor, ingredient.id), ingredient.id);
       }))
     ];
     return allInstructions.map(instruction => `<li>${instruction}</li>`).join("");

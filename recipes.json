@@ -5,13 +5,80 @@
     "grinderSetting": 65,
     "timeInSeconds": 200,
     "temperature": "hot",
+    "source": "https://aeroprecipe.com/recipes/james-hoffmann-aeropress-recipe",
     "ingredients": [
       { "id": "coffee", "label": "Coffee", "amount": 11, "scalable": true },
       { "id": "water", "label": "Water", "amount": 200, "scalable": true }
     ],
     "instructions": [
-      "Add {{coffee}} of coffee to the AeroPress.",
-      "Pour {{water}} of water and brew for {{time}}."
+      "Set the AeroPress in the standard position on a server.",
+      "Start a timer and pour {{water}} of water, making sure to wet all grounds.",
+      "Immediately insert the plunger about 1 cm in to create a vacuum.",
+      "Wait 2 minutes, then gently swirl the brewer.",
+      "Wait 30 seconds, then press gently for about 30 seconds."
+    ]
+  },
+  {
+    "method": "aeropress",
+    "name": "Two Big Cups - One Brew",
+    "grinderSetting": 70,
+    "timeInSeconds": 150,
+    "temperature": "hot",
+    "source": "https://aeroprecipe.com/recipes/backpack-of-freedom",
+    "ingredients": [
+      { "id": "coffee", "label": "Coffee", "amount": 30, "scalable": true },
+      { "id": "water", "label": "Water", "amount": 400, "scalable": true }
+    ],
+    "instructions": [
+      "Preheat the server and AeroPress with warm water.",
+      "Rinse the paper filter and place the AeroPress on the server.",
+      "Add {{coffee}} of coffee, then pour {{water:0.625}} of the water.",
+      "Stir gently for 15 seconds and insert the plunger to stop dripping.",
+      "At 2 minutes, press for 30~40 seconds.",
+      "Add the remaining {{water:0.375}} of water, then serve."
+    ]
+  },
+  {
+    "method": "aeropress",
+    "name": "Two Big Cold Cups - One Brew",
+    "grinderSetting": 70,
+    "timeInSeconds": 150,
+    "temperature": "cold",
+    "ingredients": [
+      { "id": "coffee", "label": "Coffee", "amount": 30, "scalable": true },
+      { "id": "water", "label": "Water", "amount": 250, "scalable": true },
+      { "id": "ice", "label": "Ice", "amount": 150, "scalable": true }
+    ],
+    "instructions": [
+      "Preheat the AeroPress with warm water.",
+      "Place {{ice}} of ice in the server.",
+      "Rinse the paper filter and place the AeroPress on the server.",
+      "Add {{coffee}} of coffee, then pour {{water}} of the water.",
+      "Stir gently for 15 seconds and insert the plunger to stop dripping.",
+      "At 2 minutes, press for 30~40 seconds.",
+      "Swirl to melt the ice and serve over fresh ice."
+    ]
+  },
+  {
+    "method": "aeropress",
+    "name": "James Hoffmann's Iced AeroPress",
+    "grinderSetting": 65,
+    "timeInSeconds": 270,
+    "temperature": "cold",
+    "source": "https://aeroprecipe.com/recipes/james-hoffmann-iced-aeropress",
+    "ingredients": [
+      { "id": "coffee", "label": "Coffee", "amount": 22, "scalable": true },
+      { "id": "water", "label": "Water", "amount": 240, "scalable": true },
+      { "id": "ice", "label": "Ice", "amount": 160, "scalable": true }
+    ],
+    "instructions": [
+      "Put {{ice}} of ice in a decanter, then set the AeroPress in the standard position on top; do not rinse the filter.",
+      "Boil the water, add {{coffee}} of coffee to the AeroPress, and level the bed.",
+      "Pour {{water}} of water straight off the boil, wetting all the coffee.",
+      "Start a timer and immediately insert the plunger.",
+      "Wait 4 minutes",
+      "Gently swirl the brewer, wait 30 seconds, then press gently all the way.",
+      "Swirl to melt the ice and serve over fresh ice."
     ]
   },
   {

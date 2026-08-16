@@ -207,9 +207,10 @@ main { max-width: 1040px; margin: 0 auto; padding: 3rem 1.25rem 1.5rem; }
 
 .recipe__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; margin: 1rem 0 1.2rem; }
 .recipe__actions .scale { flex: 1 1 auto; margin: 0; }
-.recipe__share { min-height: 40px; padding: .45rem .8rem; border: 1px solid var(--coffee); border-radius: 999px; color: var(--coffee); background: transparent; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; transition: color .18s ease, background-color .18s ease, transform .18s ease; }
-.recipe__share:hover, .recipe__share:focus-visible { color: var(--paper); background: var(--coffee); transform: translateY(-1px); }
-.recipe__share:focus-visible { outline: 3px solid var(--focus-shadow); outline-offset: 3px; }
+.recipe__share, .recipe__source { min-height: 40px; padding: .45rem .8rem; border: 1px solid var(--coffee); border-radius: 999px; color: var(--coffee); background: transparent; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: color .18s ease, background-color .18s ease, transform .18s ease; }
+.recipe__source { display: inline-flex; align-items: center; justify-content: center; }
+.recipe__share:hover, .recipe__share:focus-visible, .recipe__source:hover, .recipe__source:focus-visible { color: var(--paper); background: var(--coffee); transform: translateY(-1px); }
+.recipe__share:focus-visible, .recipe__source:focus-visible { outline: 3px solid var(--focus-shadow); outline-offset: 3px; }
 .recipe__share-status { flex-basis: 100%; min-height: 1.2em; margin: -.35rem 0 0; color: var(--muted-coffee); font-size: .76rem; }
 .scale__toggle, .scale__reset, .scale__step, .scale__presets button {
   border: 1px solid var(--coffee);
