@@ -113,5 +113,26 @@
       "Start a timer and pour {{water}} of water for 40 seconds.",
       "Wait for the remaining brew time, then serve."
     ]
+  },
+  {
+    "method": "french_press",
+    "name": "Hoffmann Method",
+    "grinderSetting": 120,
+    "timeInSeconds": 600,
+    "temperature": "hot",
+    "source": "https://www.youtube.com/watch?v=st571DYYTR8",
+    "ingredients": [
+      { "id": "coffee", "label": "Coffee", "amount": 30, "scalable": true },
+      { "id": "water", "label": "Water", "amount": 500, "scalable": true }
+    ],
+    "instructions": [
+      "Add {{coffee}} of coffee to the french press.",
+      "Start a timer and pour {{water}} of water in 10 seconds.",
+      "Wait for the timer to mark 5 minutes.",
+      "Stir the crust on top with a spoon.",
+      "Using two spoons, scoop out ground and foam that form on top.",
+      "Wait for (at least) another 5 minutes. Up to 8 minutes is fine.",
+      "Place the plunger gently so it sits above the surface of the coffee. DO NOT PLUNGE ALL THE WAY."
+    ]
   }
 ]
